@@ -2,21 +2,14 @@
 #include "menu.h"
 #include <string>
 
-static int pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
+static int pokazPause(sf::RenderWindow& window, sf::Font& font)
 {
     sf::Text title;
     title.setFont(font);
-    title.setString("GAME OVER");
+    title.setString("PAUZA");
     title.setCharacterSize(42);
     title.setFillColor(sf::Color::White);
     title.setPosition(400.f - title.getLocalBounds().width / 2.f, 140.f);
-
-    sf::Text score;
-    score.setFont(font);
-    score.setString("Punkty: " + std::to_string(punkty));
-    score.setCharacterSize(26);
-    score.setFillColor(sf::Color::White);
-    score.setPosition(400.f - score.getLocalBounds().width / 2.f, 190.f);
 
     sf::RectangleShape btn[3];
     const sf::Vector2f size(260.f, 60.f);
@@ -29,7 +22,7 @@ static int pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
     }
 
     sf::Text txt[3];
-    const char* labels[3] = { "Zagraj ponownie", "Powrot do menu", "Wyjdz" };
+    const char* labels[3] = { "Wznow", "Restart", "Wyjdz do menu" };
     for (int i = 0; i < 3; ++i) {
         txt[i].setFont(font);
         txt[i].setString(labels[i]);
@@ -51,7 +44,7 @@ static int pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
                 if (e.key.code == sf::Keyboard::Up) selected = (selected + 2) % 3;
                 if (e.key.code == sf::Keyboard::Down) selected = (selected + 1) % 3;
                 if (e.key.code == sf::Keyboard::Enter || e.key.code == sf::Keyboard::Space) return selected;
-                if (e.key.code == sf::Keyboard::Escape) return 2;
+                if (e.key.code == sf::Keyboard::Escape) return 0;
             }
         }
 
@@ -60,11 +53,7 @@ static int pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
 
         window.clear(sf::Color(15, 15, 22));
         window.draw(title);
-        window.draw(score);
-        for (int i = 0; i < 3; ++i) {
-            window.draw(btn[i]);
-            window.draw(txt[i]);
-        }
+        for (int i = 0; i < 3; ++i) { window.draw(btn[i]); window.draw(txt[i]); }
         window.display();
     }
 
@@ -110,6 +99,7 @@ void Game::run()
         m_paletka = Paletka();
         m_pilka = Pilka();
         m_bloki.clear();
+
         float szerBloku = (800 - 5 * 2) / 6.f;
         float wysBloku = 25;
         for (int y = 0; y < 7; y++) {
@@ -123,6 +113,7 @@ void Game::run()
                 m_bloki.emplace_back(sf::Vector2f(px, py), sf::Vector2f(szerBloku, wysBloku), L);
             }
         }
+
         m_punkty = 0;
         m_textPunkty.setString("Punkty: 0");
 
@@ -130,11 +121,46 @@ void Game::run()
 
         while (m_window.isOpen() && graTrwa) {
             sf::Event e;
-            while (m_window.pollEvent(e))
+            while (m_window.pollEvent(e)) {
                 if (e.type == sf::Event::Closed) {
                     m_window.close();
                     return;
                 }
+                if (e.type == sf::Event::KeyPressed) {
+                    if (e.key.code == sf::Keyboard::Escape) {
+                        int p = pokazPause(m_window, m_font);
+                        if (p == 0) {
+                        }
+                        else if (p == 1) {
+                            m_paletka = Paletka();
+                            m_pilka = Pilka();
+                            m_bloki.clear();
+                            float szerBloku2 = (800 - 5 * 2) / 6.f;
+                            float wysBloku2 = 25;
+                            for (int y = 0; y < 7; y++) {
+                                for (int x = 0; x < 6; x++) {
+                                    float px = x * (szerBloku2 + 2);
+                                    float py = y * (wysBloku2 + 2) + 50;
+                                    int L;
+                                    if (y == 0) L = 3;
+                                    else if (y < 3) L = 2;
+                                    else L = 1;
+                                    m_bloki.emplace_back(sf::Vector2f(px, py), sf::Vector2f(szerBloku2, wysBloku2), L);
+                                }
+                            }
+                            m_punkty = 0;
+                            m_textPunkty.setString("Punkty: 0");
+                            continue;
+                        }
+                        else if (p == 2) {
+                            graTrwa = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!graTrwa) break;
 
             float dx = 0.f;
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) dx = -8.f;
@@ -159,38 +185,7 @@ void Game::run()
                 }
             }
 
-            if (m_pilka.getY() > 600) {
-                int opt = pokazGameOver(m_window, m_font, m_punkty);
-                if (opt == 0) {
-                    m_paletka = Paletka();
-                    m_pilka = Pilka();
-                    m_bloki.clear();
-                    float szerBloku2 = (800 - 5 * 2) / 6.f;
-                    float wysBloku2 = 25;
-                    for (int y = 0; y < 7; y++) {
-                        for (int x = 0; x < 6; x++) {
-                            float px = x * (szerBloku2 + 2);
-                            float py = y * (wysBloku2 + 2) + 50;
-                            int L;
-                            if (y == 0) L = 3;
-                            else if (y < 3) L = 2;
-                            else L = 1;
-                            m_bloki.emplace_back(sf::Vector2f(px, py), sf::Vector2f(szerBloku2, wysBloku2), L);
-                        }
-                    }
-                    m_punkty = 0;
-                    m_textPunkty.setString("Punkty: 0");
-                    continue;
-                }
-                else if (opt == 1) {
-                    graTrwa = false;
-                    break;
-                }
-                else {
-                    m_window.close();
-                    return;
-                }
-            }
+            if (m_pilka.getY() > 600) graTrwa = false;
 
             m_window.clear(sf::Color(20, 20, 30));
             m_window.draw(m_paletka.getShape());
