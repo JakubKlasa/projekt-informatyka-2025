@@ -31,6 +31,13 @@ Game::Game() {
     m_textPunkty.setPosition(10.f, 10.f);
     m_punkty = 0;
     m_textPunkty.setString("Punkty: 0");
+
+    m_textZycia.setFont(m_font);
+    m_textZycia.setCharacterSize(24);
+    m_textZycia.setFillColor(sf::Color::White);
+    m_textZycia.setPosition(700.f, 10.f);
+    m_zycia = 3;
+    m_textZycia.setString("Zycia: 3");
 }
 
 void Game::run()
@@ -59,6 +66,8 @@ void Game::run()
 
         m_punkty = 0;
         m_textPunkty.setString("Punkty: " + std::to_string(m_punkty));
+        m_zycia = 3;
+        m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
 
         bool graTrwa = true;
 
@@ -93,6 +102,8 @@ void Game::run()
                             }
                             m_punkty = 0;
                             m_textPunkty.setString("Punkty: " + std::to_string(m_punkty));
+                            m_zycia = 3;
+                            m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
                             continue;
                         }
                         else if (p == 2) {
@@ -128,7 +139,19 @@ void Game::run()
                 }
             }
 
-            if (m_pilka.getY() > 600) graTrwa = false;
+            if (m_pilka.getY() > 600) {
+                m_zycia--;
+                m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
+
+                if (m_zycia <= 0) {
+                    graTrwa = false;
+                }
+                else {
+                    m_paletka = Paletka();
+                    m_pilka = Pilka();
+                    sf::sleep(sf::milliseconds(400));
+                }
+            }
 
             m_window.clear(sf::Color(20, 20, 30));
             m_window.draw(m_paletka.getShape());
@@ -137,6 +160,7 @@ void Game::run()
                 if (!b.isDestroyed())
                     m_window.draw(b.getShape());
             m_window.draw(m_textPunkty);
+            m_window.draw(m_textZycia);
             m_window.display();
         }
     }

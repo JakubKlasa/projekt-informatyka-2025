@@ -12,11 +12,16 @@ public:
     Game();
     void run();
 private:
-    sf::RenderWindow m_window;
+     sf::RenderWindow m_window;
     Paletka m_paletka;
     Pilka m_pilka;
     vector<Stone> m_bloki;
+
     int m_punkty = 0;
+    int m_zycia = 3;              
     sf::Font m_font;
     sf::Text m_textPunkty;
+
+
+    sf::Text m_textZycia;        
 };
