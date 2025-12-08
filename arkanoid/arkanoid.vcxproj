@@ -133,12 +133,14 @@
     <ClCompile Include="arkanoid.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="menu.cpp" />
+    <ClCompile Include="pauza.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="Obiekty.h" />
     <ClInclude Include="paletka.h" />
+    <ClInclude Include="pauza.h" />
     <ClInclude Include="pilka.h" />
     <ClInclude Include="stone.h" />
   </ItemGroup>
