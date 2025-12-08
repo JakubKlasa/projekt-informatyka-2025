@@ -1,4 +1,3 @@
-// pause.cpp
 #include "pauza.h"
 
 int pokazPause(sf::RenderWindow& window, sf::Font& font)

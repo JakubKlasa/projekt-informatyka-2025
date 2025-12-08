@@ -21,12 +21,25 @@ public:
     void bounceY() { vel.y = -vel.y; }
 
     void collideWalls() {
-        if (shape.getPosition().x - shape.getRadius() <= 0 || shape.getPosition().x + shape.getRadius() >= 800) bounceX();
-        if (shape.getPosition().y - shape.getRadius() <= 0) bounceY();
+        if (shape.getPosition().x - shape.getRadius() <= 0 ||
+            shape.getPosition().x + shape.getRadius() >= 800)
+            vel.x = -vel.x;
+
+        if (shape.getPosition().y - shape.getRadius() <= 0)
+            vel.y = -vel.y;
     }
 
     void collidePaddle(const Paletka& p) {
-        if (shape.getGlobalBounds().intersects(p.getShape().getGlobalBounds()) && vel.y > 0) vel.y = -vel.y;
+        if (shape.getGlobalBounds().intersects(p.getShape().getGlobalBounds()) && vel.y > 0) {
+            float paddleX = p.getShape().getPosition().x;
+            float ballX = shape.getPosition().x;
+            float half = p.getShape().getSize().x / 2.f;
+
+            float ratio = (ballX - paddleX) / half;
+
+            vel.x = ratio * 6.f;
+            vel.y = -vel.y;
+        }
     }
 
     const sf::CircleShape& getShape() const { return shape; }
