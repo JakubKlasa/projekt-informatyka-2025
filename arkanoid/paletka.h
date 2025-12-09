@@ -3,6 +3,7 @@
 #include <vector>
 #include "pilka.h"
 #include "stone.h"
+
 class Paletka {
 private:
     sf::RectangleShape shape;
@@ -16,9 +17,13 @@ public:
 
     void move(float dx) {
         shape.setPosition(shape.getPosition().x + dx, shape.getPosition().y);
-        if (shape.getPosition().x - shape.getSize().x / 2.f < 0) shape.setPosition(shape.getSize().x / 2.f, shape.getPosition().y);
-        if (shape.getPosition().x + shape.getSize().x / 2.f > 800) shape.setPosition(800 - shape.getSize().x / 2.f, shape.getPosition().y);
+        if (shape.getPosition().x - shape.getSize().x / 2.f < 0)
+            shape.setPosition(shape.getSize().x / 2.f, shape.getPosition().y);
+        if (shape.getPosition().x + shape.getSize().x / 2.f > 800)
+            shape.setPosition(800 - shape.getSize().x / 2.f, shape.getPosition().y);
     }
 
     const sf::RectangleShape& getShape() const { return shape; }
+    sf::Vector2f getPosition() const { return shape.getPosition(); }
+    void setPosition(const sf::Vector2f& p) { shape.setPosition(p); }
 };

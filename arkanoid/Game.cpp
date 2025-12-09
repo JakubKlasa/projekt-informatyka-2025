@@ -2,6 +2,7 @@
 #include "menu.h"
 #include "pauza.h"
 #include <string>
+#include <fstream>
 
 static void pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
 {
@@ -52,7 +53,7 @@ Game::Game() {
     m_pilka = Pilka();
 
     float szerBloku = (800 - 5 * 2) / 6.f;
-    float wysBloku = 25;
+    float wysBloku = 25.f;
 
     for (int y = 0; y < 7; y++) {
         for (int x = 0; x < 6; x++) {
@@ -67,6 +68,7 @@ Game::Game() {
     }
 
     m_font.loadFromFile("arial.ttf");
+
     m_textPunkty.setFont(m_font);
     m_textPunkty.setCharacterSize(24);
     m_textPunkty.setFillColor(sf::Color::White);
@@ -82,18 +84,72 @@ Game::Game() {
     m_textZycia.setString("Zycia: 3");
 }
 
+void Game::zapiszGre(const std::string& nazwa)
+{
+    std::ofstream f(nazwa);
+    if (!f) return;
+
+    f << m_punkty << " " << m_zycia << "\n";
+
+    sf::Vector2f pp = m_paletka.getPosition();
+    f << pp.x << " " << pp.y << "\n";
+
+    sf::Vector2f bp = m_pilka.getPosition();
+    sf::Vector2f bv = m_pilka.getVelocity();
+    f << bp.x << " " << bp.y << "\n";
+    f << bv.x << " " << bv.y << "\n";
+
+    for (auto& b : m_bloki) {
+        f << b.getHp() << " ";
+    }
+    f << "\n";
+}
+
+bool Game::wczytajGre(const std::string& nazwa)
+{
+    std::ifstream f(nazwa);
+    if (!f) return false;
+
+    int punkty, zycia;
+    if (!(f >> punkty >> zycia)) return false;
+
+    float px, py, bx, by, vx, vy;
+    if (!(f >> px >> py)) return false;
+    if (!(f >> bx >> by)) return false;
+    if (!(f >> vx >> vy)) return false;
+
+    m_punkty = punkty;
+    m_zycia = zycia;
+    m_textPunkty.setString("Punkty: " + std::to_string(m_punkty));
+    m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
+
+    m_paletka.setPosition(sf::Vector2f(px, py));
+    m_pilka.setPosition(sf::Vector2f(bx, by));
+    m_pilka.setVelocity(sf::Vector2f(vx, vy));
+
+    for (auto& b : m_bloki) {
+        int hp;
+        if (!(f >> hp)) break;
+        b.setHp(hp);
+    }
+
+    return true;
+}
+
 void Game::run()
 {
     while (m_window.isOpen()) {
-        int wynik = pokazMenu(m_window);
-        if (wynik == 1) return;
+        int wyborMenu = pokazMenu(m_window);
+        if (wyborMenu == 2) return;
+
+        bool wczytaj = (wyborMenu == 1);
 
         m_paletka = Paletka();
         m_pilka = Pilka();
         m_bloki.clear();
 
         float szerBloku = (800 - 5 * 2) / 6.f;
-        float wysBloku = 25;
+        float wysBloku = 25.f;
         for (int y = 0; y < 7; y++) {
             for (int x = 0; x < 6; x++) {
                 float px = x * (szerBloku + 2);
@@ -107,9 +163,13 @@ void Game::run()
         }
 
         m_punkty = 0;
-        m_textPunkty.setString("Punkty: " + std::to_string(m_punkty));
         m_zycia = 3;
-        m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
+        m_textPunkty.setString("Punkty: 0");
+        m_textZycia.setString("Zycia: 3");
+
+        if (wczytaj) {
+            wczytajGre("save.txt");
+        }
 
         bool graTrwa = true;
 
@@ -126,11 +186,14 @@ void Game::run()
                         if (p == 0) {
                         }
                         else if (p == 1) {
+                            zapiszGre("save.txt");
+                        }
+                        else if (p == 2) {
                             m_paletka = Paletka();
                             m_pilka = Pilka();
                             m_bloki.clear();
                             float szerBloku2 = (800 - 5 * 2) / 6.f;
-                            float wysBloku2 = 25;
+                            float wysBloku2 = 25.f;
                             for (int y = 0; y < 7; y++) {
                                 for (int x = 0; x < 6; x++) {
                                     float px = x * (szerBloku2 + 2);
@@ -143,12 +206,12 @@ void Game::run()
                                 }
                             }
                             m_punkty = 0;
-                            m_textPunkty.setString("Punkty: " + std::to_string(m_punkty));
                             m_zycia = 3;
-                            m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
+                            m_textPunkty.setString("Punkty: 0");
+                            m_textZycia.setString("Zycia: 3");
                             continue;
                         }
-                        else if (p == 2) {
+                        else if (p == 3) {
                             graTrwa = false;
                             break;
                         }
@@ -159,8 +222,10 @@ void Game::run()
             if (!graTrwa) break;
 
             float dx = 0.f;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) dx = -8.f;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) dx = 8.f;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+                dx = -8.f;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+                dx = 8.f;
             m_paletka.move(dx);
 
             m_pilka.move();

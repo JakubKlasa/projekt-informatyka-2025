@@ -24,7 +24,6 @@ public:
         if (shape.getPosition().x - shape.getRadius() <= 0 ||
             shape.getPosition().x + shape.getRadius() >= 800)
             vel.x = -vel.x;
-
         if (shape.getPosition().y - shape.getRadius() <= 0)
             vel.y = -vel.y;
     }
@@ -34,9 +33,7 @@ public:
             float paddleX = p.getShape().getPosition().x;
             float ballX = shape.getPosition().x;
             float half = p.getShape().getSize().x / 2.f;
-
             float ratio = (ballX - paddleX) / half;
-
             vel.x = ratio * 6.f;
             vel.y = -vel.y;
         }
@@ -44,4 +41,10 @@ public:
 
     const sf::CircleShape& getShape() const { return shape; }
     float getY() const { return shape.getPosition().y; }
+
+    sf::Vector2f getPosition() const { return shape.getPosition(); }
+    void setPosition(const sf::Vector2f& p) { shape.setPosition(p); }
+
+    sf::Vector2f getVelocity() const { return vel; }
+    void setVelocity(const sf::Vector2f& v) { vel = v; }
 };
