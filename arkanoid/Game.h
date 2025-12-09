@@ -27,4 +27,5 @@ private:
 
     void zapiszGre(const std::string& nazwa);
     bool wczytajGre(const std::string& nazwa);
+    void zapiszWynik(const std::string& nazwa);
 };

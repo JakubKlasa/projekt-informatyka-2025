@@ -46,6 +46,48 @@ static void pokazGameOver(sf::RenderWindow& window, sf::Font& font, int punkty)
     }
 }
 
+static void pokazWygrana(sf::RenderWindow& window, sf::Font& font, int punkty)
+{
+    sf::Text title;
+    title.setFont(font);
+    title.setString("WYGRANA");
+    title.setCharacterSize(42);
+    title.setFillColor(sf::Color::White);
+    title.setPosition(400.f - title.getLocalBounds().width / 2.f, 200.f);
+
+    sf::Text score;
+    score.setFont(font);
+    score.setString("Punkty: " + std::to_string(punkty));
+    score.setCharacterSize(26);
+    score.setFillColor(sf::Color::White);
+    score.setPosition(400.f - score.getLocalBounds().width / 2.f, 250.f);
+
+    sf::Text info;
+    info.setFont(font);
+    info.setString("Nacisnij klawisz aby kontynuowac");
+    info.setCharacterSize(20);
+    info.setFillColor(sf::Color(200, 200, 200));
+    info.setPosition(400.f - info.getLocalBounds().width / 2.f, 300.f);
+
+    while (window.isOpen()) {
+        sf::Event e;
+        while (window.pollEvent(e)) {
+            if (e.type == sf::Event::Closed) {
+                window.close();
+                return;
+            }
+            if (e.type == sf::Event::KeyPressed || e.type == sf::Event::MouseButtonPressed)
+                return;
+        }
+
+        window.clear(sf::Color(10, 10, 20));
+        window.draw(title);
+        window.draw(score);
+        window.draw(info);
+        window.display();
+    }
+}
+
 Game::Game() {
     m_window.create(sf::VideoMode(800, 600), "Gra informatyka");
     m_window.setFramerateLimit(60);
@@ -134,6 +176,13 @@ bool Game::wczytajGre(const std::string& nazwa)
     }
 
     return true;
+}
+
+void Game::zapiszWynik(const std::string& nazwa)
+{
+    std::ofstream f(nazwa, std::ios::app);
+    if (!f) return;
+    f << m_punkty << "\n";
 }
 
 void Game::run()
@@ -246,11 +295,27 @@ void Game::run()
                 }
             }
 
+            bool wszystkieZbite = true;
+            for (auto& b : m_bloki) {
+                if (!b.isDestroyed()) {
+                    wszystkieZbite = false;
+                    break;
+                }
+            }
+            if (wszystkieZbite) {
+                zapiszWynik("scores.txt");
+                pokazWygrana(m_window, m_font, m_punkty);
+                graTrwa = false;
+            }
+
+            if (!graTrwa) break;
+
             if (m_pilka.getY() > 600) {
                 m_zycia--;
                 m_textZycia.setString("Zycia: " + std::to_string(m_zycia));
 
                 if (m_zycia <= 0) {
+                    zapiszWynik("scores.txt");
                     pokazGameOver(m_window, m_font, m_punkty);
                     graTrwa = false;
                 }
